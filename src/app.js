@@ -1,14 +1,16 @@
 import express from "express"
-import cors from "cors"
-import authRouter from "./routes/AuthRoutes.js"
-import myWalletRoutes from "./routes/MyWalletRoutes.js"
+import dotenv from "dotenv"
+import * as cors from "cors"
+import gamesRouter from "./routes/GamesRouter.js"
 
 const app = express()
+dotenv.config()
 app.use(express.json())
 app.use(cors())
 
-app.use( [ authRouter, myWalletRoutes ] )
+app.use( [ gamesRouter ] )
 
-app.listen(5000, () => {
-  console.log('Servidor iniciou!!!')
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, () => {
+  console.log(`Servidor iniciou na porta ${PORT}!!!`)
 })
