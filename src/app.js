@@ -1,6 +1,6 @@
 import express from "express"
 import dotenv from "dotenv"
-import * as cors from "cors"
+import cors from "cors"
 import gamesRouter from "./routes/GamesRouter.js"
 
 const app = express()
