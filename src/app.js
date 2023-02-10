@@ -10,7 +10,6 @@ app.use(cors())
 
 app.use( [ gamesRouter ] )
 
-const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
+app.listen(process.env.PORT || 5000, () => {
   console.log(`Servidor iniciou na porta ${PORT}!!!`)
 })

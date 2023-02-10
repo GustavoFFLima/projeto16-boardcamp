@@ -1,16 +1,11 @@
-import { MongoClient } from "mongodb";
+import pg from "pg";
 import dotenv from "dotenv"
 
 dotenv.config()
 
-const mongoClient = new MongoClient(process.env.DATABASE_URL)
-let db;
+const { Pool } = pg;
+const configDatabase = { connectionString: process.env.DATABASE_URL, };
 
-try {
-  await mongoClient.connect()
-  db = mongoClient.db()
-} catch (error) {
-  console.log('Errro no server')
-}
+if(process.env.MODE === 'prod') configDatabase.ssl = true;
 
-export default db
+export const db = new Pool(configDatabase);
