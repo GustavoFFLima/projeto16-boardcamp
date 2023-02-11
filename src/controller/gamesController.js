@@ -19,7 +19,7 @@ export const postGames = async (req, res) => {
         const erros = validation.error.details.map((err) => {
             return err.message
         })
-        return res.status(422).send(erros)
+        return res.status(400).send(erros)
     }
 
     try {
