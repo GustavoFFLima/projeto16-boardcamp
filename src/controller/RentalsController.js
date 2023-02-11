@@ -1,5 +1,5 @@
 import { db } from "../config/database.js"
-import {rentalsSchema } from "../model/RentalsSchema.js"
+//import {rentalsSchema } from "../model/RentalsSchema.js"
 
 export const getRentals = async (req, res) => {
     try {
