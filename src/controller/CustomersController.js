@@ -1,14 +1,13 @@
 import { db } from "../config/database.js"
-import { customersSchema } from "../model/CustomersSchema.js"
 
 export const getCustomers = async (req, res) => {
     try {
         const customers = await db.query("SELECT * FROM customers");
-        res.status(201).send(customers.rows)
+        res.status(200).send(customers.rows)
     } catch (error) {
         res.status(500).send(error.message)
     }
-};
+}; 
 
 export const getCustomersById = async (req, res) => {
     const { id } = req.params
@@ -16,7 +15,7 @@ export const getCustomersById = async (req, res) => {
     try {
         const customers = await db.query(`SELECT * FROM customers WHERE id = $1`, [Number(id)]);
         if(customers.rowCount == 0) {
-            return res.sendStatus(400)
+            return res.sendStatus(404)
         }
         res.send(customers.rows)
     } catch (error) {
@@ -24,7 +23,7 @@ export const getCustomersById = async (req, res) => {
     }
 };
 
-export const postCustomers = async (req, res) => {
+export const postSignUpCustomer = async (req, res) => {
     const { name, phone, cpf, birthday } = req.body;
 
     try {
