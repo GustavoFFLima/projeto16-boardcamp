@@ -21,10 +21,11 @@ export const postRentals = async (req, res) => {
     if(daysRented < 1) res.sendStatus(400);
 
     try {
-      await db.query(` INSERT INTO rentals  
-        ("customerId", "gameId", "rentDate", "daysRented", "returnDate", "originalPrice", "delayFee") 
-        VALUES ($1, $2, $3::date, $4, $5, $4 * (SELECT games."pricePerDay" as "originalPrice" FROM games WHERE games.id = $2) ,$6)`, 
-        [customerId, gameId, dayjs().format("YYYY-MM-DD"), daysRented, null, null]);
+
+        await db.query(` INSERT INTO rentals  
+            ("customerId", "gameId", "rentDate", "daysRented", "returnDate", "originalPrice", "delayFee") 
+            VALUES ($1, $2, $3::date, $4, $5, $6 * (SELECT games."pricePerDay" as "originalPrice" FROM games WHERE games.id = $2) ,$7)`, 
+           [customerId, gameId, dayjs().format("YYYY-MM-DD"), daysRented, null, null]);
         res.sendStatus(201)
     } catch (error) {
         res.status(500).send(error.message)
