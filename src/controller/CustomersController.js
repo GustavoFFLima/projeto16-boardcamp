@@ -14,10 +14,10 @@ export const getCustomersById = async (req, res) => {
 
     try {
         const customers = await db.query(`SELECT * FROM customers WHERE id = $1`, [Number(id)]);
-        if(customers.rowCount == 0) {
+        if(customers.rows.length < 1) {
             return res.sendStatus(404)
         }
-        res.send(customers.rows)
+        res.send(customers.rows[0])
     } catch (error) {
         res.status(500).send(error.message)
     }
