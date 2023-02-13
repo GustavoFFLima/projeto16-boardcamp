@@ -31,13 +31,24 @@ export const postRentals = async (req, res) => {
 
 export const postRentalsById = async (req, res) => {
     const { id } = req.params
+    const today = dayjs().format('YYYY-MM-DD')
+    let delayfree = 0
 
     try {
         const rentals = await db.query(`SELECT * FROM rentals WHERE id = $1`, [Number(id)]);
-        if(rentals.rowCount == 0) {
+        if(rentals.rows.length == 0) {
             return res.sendStatus(400)
         }
-        res.send(rentals.rows)
+        const {rentDate, daysRented, returnDate, price} = getGame.rows[0]
+        if(returnDate != null) return res.sendStatus(400)
+        const rentesTime = dayjs().diff(rentDate, 'day')
+        if (rentesTime > daysRented) delayfree = rentesTime - daysRented;
+
+        await db.query(`
+          UPDATE rentals SET "returnDate" = $1, "delayFee" = $2 WHERE id = $3 `,
+          [today, delayfree * price, id]
+        );
+        res.sendStatus(200)
     } catch (error) {
         res.status(500).send(error.message)
     }
