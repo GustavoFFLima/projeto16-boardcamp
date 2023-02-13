@@ -18,11 +18,17 @@ export const getRentals = async (req, res) => {
 export const postRentals = async (req, res) => {
     const { customerId, gameId, daysRented } = req.body;
 
+    if(daysRented < 1) res.sendStatus(400);
+
     try {
-      await db.query(` INSERT INTO rentals  
-        ("customerId", "gameId", "rentDate", "daysRented", "returnDate", "originalPrice", "delayFee") 
-        VALUES ($1, $2, $3::date, $4, $5, $4 * (SELECT games."pricePerDay" as "originalPrice" FROM games WHERE games.id = $2) ,$6)`, 
-        [customerId, gameId, dayjs().format("YYYY-MM-DD"), daysRented, null, null]);
+        const ValidationCustomer = await db.query(`SELECT * FROM customers WHERE id=$1`, [customerId]);
+        if (ValidationCustomer.rows.length < 1) return res.sendStatus(400);
+        const gameInfo = await db.query("SELECT * FROM games WHERE id=$1", [gameId]);
+        if (gameInfo.rows.length < 1) return res.sendStatus(400);
+        const checkRentals = await db.query(`SELECT * FROM rentals WHERE "gameId" = $1`, [gameId]);
+        if(checkRentals.rows.length >= gameInfo.rows[0].stockTotal) return res.sendStatus(400);
+        const price = gameInfo.rows[0].pricePerDay * daysRented;
+        await db.query(`INSERT INTO rentals ("customerId", "gameId", "rentDate", "daysRented", "returnDate", "originalPrice", "delayFee") VALUES ($1,$2,$3,$4,$5,$6,$7)`, [customerId, gameId, Today, daysRented, null, price, null]);
         res.sendStatus(201)
     } catch (error) {
         res.status(500).send(error.message)
@@ -37,7 +43,7 @@ export const postRentalsById = async (req, res) => {
     try {
         const rentals = await db.query(`SELECT * FROM rentals WHERE id = $1`, [Number(id)]);
         if(rentals.rows.length == 0) {
-            return res.sendStatus(400)
+            return res.sendStatus(404)
         }
         const {rentDate, daysRented, returnDate, price} = getGame.rows[0]
         if(returnDate != null) return res.sendStatus(400)
