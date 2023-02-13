@@ -3,7 +3,7 @@ export function validitySchema(schema) {
         const { error } = schema.validate(req.body, { abortEarly: false });
         if(error) {
             return res.status(400).send({
-                messae: error.details.mao((d) => d.message)
+                messae: error.details.map((d) => d.message)
             })
             next();
         }
