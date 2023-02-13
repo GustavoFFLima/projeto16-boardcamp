@@ -45,16 +45,16 @@ export const postRentalsById = async (req, res) => {
         if(rentals.rows.length == 0) {
             return res.sendStatus(404)
         }
-        const {rentDate, daysRented, returnDate, price} = rentals.rows[0]
+        const {rentDate, daysRented, returnDate, originalPrice} = rentals.rows[0]
         if(returnDate != null) return res.sendStatus(400)
         const rentesTime = dayjs().diff(rentDate, 'day')
-        if (rentesTime > daysRented) delayfree = rentesTime - daysRented;
-
-        const dayPrice = price / daysRented
-        await db.query(`
-          UPDATE rentals SET "returnDate" = $1, "delayFee" = $2 WHERE id = $3 `,
-          [today, delayfree * dayPrice, id]
-        );
+        if (rentesTime <= daysRented) {
+            delayfree = daysRented - rentesTime;
+        }
+        const dayPrice = originalPrice / daysRented
+        const latefree = delayfree * dayPrice
+        await db.query(`UPDATE rentals SET "returnDate"=$1, "delayFee"=$2 WHERE id=$3`,[today, latefree, id]);
+        console.log("cima")
         res.sendStatus(200)
     } catch (error) {
         res.status(500).send(error.message)
