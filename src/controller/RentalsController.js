@@ -18,6 +18,8 @@ export const getRentals = async (req, res) => {
 export const postRentals = async (req, res) => {
     const { customerId, gameId, daysRented } = req.body;
 
+    if(daysRented < 1) res.sendStatus(400);
+
     try {
       await db.query(` INSERT INTO rentals  
         ("customerId", "gameId", "rentDate", "daysRented", "returnDate", "originalPrice", "delayFee") 
