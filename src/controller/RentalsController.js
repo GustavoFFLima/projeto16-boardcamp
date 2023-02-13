@@ -45,14 +45,15 @@ export const postRentalsById = async (req, res) => {
         if(rentals.rows.length == 0) {
             return res.sendStatus(404)
         }
-        const {rentDate, daysRented, returnDate, price} = getGame.rows[0]
+        const {rentDate, daysRented, returnDate, price} = rentals.rows[0]
         if(returnDate != null) return res.sendStatus(400)
         const rentesTime = dayjs().diff(rentDate, 'day')
         if (rentesTime > daysRented) delayfree = rentesTime - daysRented;
 
+        const dayPrice = price / daysRented
         await db.query(`
           UPDATE rentals SET "returnDate" = $1, "delayFee" = $2 WHERE id = $3 `,
-          [today, delayfree * price, id]
+          [today, delayfree * dayPrice, id]
         );
         res.sendStatus(200)
     } catch (error) {
