@@ -21,11 +21,14 @@ export const postRentals = async (req, res) => {
     if(daysRented < 1) res.sendStatus(400);
 
     try {
-
-        await db.query(` INSERT INTO rentals  
-            ("customerId", "gameId", "rentDate", "daysRented", "returnDate", "originalPrice", "delayFee") 
-            VALUES ($1, $2, $3::date, $4, $5, $6 * (SELECT games."pricePerDay" as "originalPrice" FROM games WHERE games.id = $2) ,$7)`, 
-           [customerId, gameId, dayjs().format("YYYY-MM-DD"), daysRented, null, null]);
+        const checkCustomer = await db.query(`SELECT * FROM customers WHERE id=$1`, [customerId]);
+        if (checkCustomer.rows.length < 1) return res.sendStatus(400);
+        const getGameInfo = await db.query("SELECT * FROM games WHERE id=$1", [gameId]);
+        if (getGameInfo.rows.length < 1) return res.sendStatus(400);
+        const checkGameRentals = await db.query(`SELECT * FROM rentals WHERE "gameId" = $1`, [gameId]);
+        if(checkGameRentals.rows.length >= getGameInfo.rows[0].stockTotal) return res.sendStatus(400);
+        const EstPrice = getGameInfo.rows[0].pricePerDay * daysRented;
+        await db.query(`INSERT INTO rentals ("customerId", "gameId", "rentDate", "daysRented", "returnDate", "originalPrice", "delayFee") VALUES ($1,$2,$3,$4,$5,$6,$7)`, [customerId, gameId, Today, daysRented, null, EstPrice, null]);
         res.sendStatus(201)
     } catch (error) {
         res.status(500).send(error.message)
