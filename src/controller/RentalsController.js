@@ -48,7 +48,7 @@ export const postRentalsById = async (req, res) => {
         const {rentDate, daysRented, returnDate, originalPrice} = rentals.rows[0]
         if(returnDate != null) return res.sendStatus(400)
         const rentesTime = dayjs().diff(rentDate, 'day')
-        if (rentesTime <= daysRented) {
+        if (rentesTime > daysRented) {
             delayfree = daysRented - rentesTime;
         }
         const dayPrice = originalPrice / daysRented
