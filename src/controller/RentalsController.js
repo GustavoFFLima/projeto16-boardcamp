@@ -17,29 +17,19 @@ export const getRentals = async (req, res) => {
 
 export const postRentals = async (req, res) => {
     const { customerId, gameId, daysRented } = req.body;
-    const Today = dayjs().format("YYYY-MM-DD");
-    
+
     if(daysRented < 1) res.sendStatus(400);
 
-    try{   
-        console.log(customerId)
-        const checkCustomer = await db.query(`SELECT * FROM customers WHERE id=$1`, [customerId]);
-         
-        if (checkCustomer.rows.length < 1) return res.sendStatus(400);
-        
-        const getGameInfo = await db.query("SELECT * FROM games WHERE id=$1", [gameId]);
-
-        if (getGameInfo.rows.length < 1) return res.sendStatus(400);
-        
-        const checkGameRentals = await db.query(`SELECT * FROM rentals WHERE "gameId" = $1`, [gameId]);
-
-        if(checkGameRentals.rows.length >= getGameInfo.rows[0].stockTotal) return res.sendStatus(400);
-
-        const EstPrice = getGameInfo.rows[0].pricePerDay * daysRented;
-
-        await db.query(`INSERT INTO rentals ("customerId", "gameId", "rentDate", "daysRented", "returnDate", "originalPrice", "delayFee") VALUES ($1,$2,$3,$4,$5,$6,$7)`, [customerId, gameId, Today, daysRented, null, EstPrice, null]);
-
-        res.sendStatus(201);
+    try {
+        const ValidationCustomer = await db.query(`SELECT * FROM customers WHERE id=$1`, [customerId]);
+        if (ValidationCustomer.rows.length < 1) return res.sendStatus(400);
+        const gameInfo = await db.query("SELECT * FROM games WHERE id=$1", [gameId]);
+        if (gameInfo.rows.length < 1) return res.sendStatus(400);
+        const checkRentals = await db.query(`SELECT * FROM rentals WHERE "gameId" = $1`, [gameId]);
+        if(checkRentals.rows.length >= gameInfo.rows[0].stockTotal) return res.sendStatus(400);
+        const price = gameInfo.rows[0].pricePerDay * daysRented;
+        await db.query(`INSERT INTO rentals ("customerId", "gameId", "rentDate", "daysRented", "returnDate", "originalPrice", "delayFee") VALUES ($1,$2,$3,$4,$5,$6,$7)`, [customerId, gameId, dayjs().format('YYYY-MM-DD'), daysRented, null, price, null]);
+        res.sendStatus(201)
     } catch (error) {
         res.status(500).send(error.message)
     }
