@@ -5,7 +5,7 @@ export function validitySchema(schema) {
             return res.status(400).send({
                 message: error.details.map((err) => err.message)
             })
-            next();
         }
+        next();
     }
 }
