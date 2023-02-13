@@ -47,9 +47,16 @@ export const deleteRentals = async (req, res) => {
     const { id } = req.params
 
     try {
-      await db.query(` DELETE rentals WHERE id = $1`, [ id ]);
-        res.sendStatus(201)
-    } catch (error) {
-        res.status(400).send(error.message)
-    }
+        const rentals = await db.query(`SELECT * FROM rentals WHERE id = $1`, [id]);
+    
+        if (rentals.rows.length < 1) return res.sendStatus(404);
+    
+        if (rentals.rows[0] == null) return res.sendStatus(400);
+    
+        await db.query(`DELETE FROM rentals WHERE id = $1`, [id]);
+    
+        res.sendStatus(200);
+      } catch (error) {
+        res.status(500).send(error.message);
+      }
 };
