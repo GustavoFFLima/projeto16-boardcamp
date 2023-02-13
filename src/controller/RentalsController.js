@@ -21,14 +21,14 @@ export const postRentals = async (req, res) => {
     if(daysRented < 1) res.sendStatus(400);
 
     try {
-        const checkCustomer = await db.query(`SELECT * FROM customers WHERE id=$1`, [customerId]);
-        if (checkCustomer.rows.length < 1) return res.sendStatus(400);
-        const getGameInfo = await db.query("SELECT * FROM games WHERE id=$1", [gameId]);
-        if (getGameInfo.rows.length < 1) return res.sendStatus(400);
-        const checkGameRentals = await db.query(`SELECT * FROM rentals WHERE "gameId" = $1`, [gameId]);
-        if(checkGameRentals.rows.length >= getGameInfo.rows[0].stockTotal) return res.sendStatus(400);
-        const EstPrice = getGameInfo.rows[0].pricePerDay * daysRented;
-        await db.query(`INSERT INTO rentals ("customerId", "gameId", "rentDate", "daysRented", "returnDate", "originalPrice", "delayFee") VALUES ($1,$2,$3,$4,$5,$6,$7)`, [customerId, gameId, Today, daysRented, null, EstPrice, null]);
+        const ValidationCustomer = await db.query(`SELECT * FROM customers WHERE id=$1`, [customerId]);
+        if (ValidationCustomer.rows.length < 1) return res.sendStatus(400);
+        const gameInfo = await db.query("SELECT * FROM games WHERE id=$1", [gameId]);
+        if (gameInfo.rows.length < 1) return res.sendStatus(400);
+        const checkRentals = await db.query(`SELECT * FROM rentals WHERE "gameId" = $1`, [gameId]);
+        if(checkRentals.rows.length >= gameInfo.rows[0].stockTotal) return res.sendStatus(400);
+        const price = gameInfo.rows[0].pricePerDay * daysRented;
+        await db.query(`INSERT INTO rentals ("customerId", "gameId", "rentDate", "daysRented", "returnDate", "originalPrice", "delayFee") VALUES ($1,$2,$3,$4,$5,$6,$7)`, [customerId, gameId, Today, daysRented, null, price, null]);
         res.sendStatus(201)
     } catch (error) {
         res.status(500).send(error.message)
@@ -43,7 +43,7 @@ export const postRentalsById = async (req, res) => {
     try {
         const rentals = await db.query(`SELECT * FROM rentals WHERE id = $1`, [Number(id)]);
         if(rentals.rows.length == 0) {
-            return res.sendStatus(400)
+            return res.sendStatus(404)
         }
         const {rentDate, daysRented, returnDate, price} = getGame.rows[0]
         if(returnDate != null) return res.sendStatus(400)
